@@ -102,13 +102,24 @@ class Annotation:
                 'anno_fname':os.path.split(self.anno_path)[1]}
         return info
     
-    def save(self, new_path = None):
+    def save(self, new_path = None, replace_path = False):
         ''' Save data in json format,
             if path is none anno_path utilized'''
         if new_path == None: new_path = self.anno_path
         with open(new_path, 'w') as f:
             json.dump(self.data, f)
+        if replace_path:
+            if os.path.split(new_path)[0] = '':
+                new_path = os.path.join(
+                                os.path.split(self.anno_path)[0],
+                                new_path)
+            self.anno_path = new_path
+            
         return self
+    
+    def get_anno_path(self) :
+        ''' Return anno_path'''
+        return anno_path
     
     
 #---------------------------------------
