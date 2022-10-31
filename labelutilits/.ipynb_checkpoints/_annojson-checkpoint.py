@@ -174,8 +174,10 @@ def correct_anno_img_names(anno_path, image_dir_path=None, image_id = None):
         if image_id == None or data['images'][i]['id'] in image_id:
             data['images'][i]['file_name'] = fpth
         
-        df = df.append({'old_path': data['images'][i]['file_name'],                        
-                        'new_path': fpth}, ignore_index=True)  
+        dict_ = {'old_path': data['images'][i]['file_name'],                        
+                 'new_path': fpth},
+        
+        df = pd.concat([df, pd.DataFrame(dict_)])
 
     with open(anno_path, 'w') as f:
         json.dump(data, f)
