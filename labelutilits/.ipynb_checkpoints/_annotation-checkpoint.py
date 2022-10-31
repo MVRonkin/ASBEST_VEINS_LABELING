@@ -109,7 +109,7 @@ class Annotation:
         with open(new_path, 'w') as f:
             json.dump(self.data, f)
         if replace_path:
-            if os.path.split(new_path)[0] = '':
+            if os.path.split(new_path)[0] == '':
                 new_path = os.path.join(
                                 os.path.split(self.anno_path)[0],
                                 new_path)
