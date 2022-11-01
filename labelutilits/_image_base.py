@@ -51,3 +51,24 @@ def _resize_imgs(img_pths, width, height):
             img.save(img_pth)
             report_list.append(img_pth)
     return report_list
+
+#----------------------------------
+def _correct_size_in_anno(data):
+    '''Correct Image Size in data anno in COCO JSON format.
+    Paramters
+    -----------
+    data: dict[list[dict]],
+      annotation dictionary.
+    
+    Returns
+    --------
+    data: dict[list[dict]],
+      annotation dictionary.
+    '''
+#     report = pd.DataFrame(columns = ['old_size', 'new_size'])
+    for i in range(len(data['images'])):
+        fname = data['images'][i]['file_name']        
+        width, height = Image.open(fname).size
+        data['images'][i]['width']  = width
+        data['images'][i]['height'] = height
+    return data

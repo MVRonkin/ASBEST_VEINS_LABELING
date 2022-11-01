@@ -9,7 +9,7 @@ from ._annotation_base import (_open,_set_cat_names,_cat_ids,
 
 from ._base_annotation import BaseAnnotation
 
-from ._image_base import (_resize_imgs,_imgs2gray)
+from ._image_base import (_resize_imgs,_imgs2gray, _correct_size_in_anno)
 
   
     
@@ -57,4 +57,9 @@ class Annotation(BaseAnnotation):
         '''        
         img_pths = _image_list(self.data)
         return _imgs2gray(img_pths)
+    
+     #---------------------------------
+    def correct_images_size(self):
+        self.data = _correct_size_in_anno(self.data)
+        return self
     

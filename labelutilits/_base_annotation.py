@@ -27,42 +27,65 @@ class BaseAnnotation:
             self.image_dir_path = os.path.split(anno_path)[0]
         self.open_data(self.anno_path)
 
-    def open_data(self,anno_path):
-        ''' Open data in json format '''
+    def open_data(self, anno_path):
+        ''' Open data in json format.
+        
+        Paramters
+        ----------
+        anno_path: string,
+          annotation path for json coco comatible format file. 
+        '''
         self.anno_path = anno_path
         with open(self.anno_path) as json_file:
             self.data = json.load(json_file)
         return self
 
-    def set_cat_names(self,new_names = ['']):
+    def set_cat_names(self, new_names = ['']):
         ''' New class (categories) names,
             work only if length of new class 
-            list same as le of cat_ids'''
+            list same as le of cat_ids.
+        
+        Paramters
+        ----------
+        new_names: list[string],
+          new class (categories) names.            
+        '''
         self.data = _set_cat_names(self.data, new_names = new_names)
         return self
     
     def filter_cat(self, cat_ids = None):
         '''Rest only selected category 
-           if None filter only images contains some labeling'''
+           if None filter only images contains some labeling.
+        
+        Paramters
+        ----------
+        cat_ids: string,
+          category (class) indexes to rest.   
+        '''
         self.data = _filter_cat(self.data, cat_ids = cat_ids)
         return self
     
-    def new_image_dir(self, new_dir = ''):
-        ''' Replace image dir path'''
-        self.data = _replace_image_dir(self.data, new_dir = new_dir)
-        self.image_dir_path = new_dir
+    def replace_image_dir(self, dir_path = None):
+        ''' Replace image dir path in annotation
+        
+        Paramters
+        ----------
+        dir_path: string,
+          new image directory path.
+        '''
+        if dir_path is None: dir_path = self.image_dir_path
+        self.data = _replace_image_dir(self.data, new_dir = dir_path)
+        self.image_dir_path = dir_path
         return self
     
     def rest_ids(self):
         ''' Reset category ids; image ids; anno_ids'''
         self.data = _reset_ids(self.data)
         return self
-        
-    def add_image_path_2_anno(self):
-        return self.new_image_dir(self.image_dir_path)
     
     def data_dict(self):
-        ''' Return data in format dict[list[dict]]'''
+        ''' Return data in COCO JSON 
+            compatible format dict[list[dict]]'''
         return self.data
     
     def info(self):
@@ -98,7 +121,16 @@ class BaseAnnotation:
     
     def save(self, new_path = None, replace_path = False):
         ''' Save data in json format,
-            if path is none anno_path utilized'''
+            if path is none anno_path utilized
+        
+        Parameters
+        ----------
+        new_path: string,
+          path to save JSON COCO compatible file;
+          if None, old path is utilized.
+        replace_path: bool,
+          if True, new_path replace anno_path.
+        '''
         if new_path == None: new_path = self.anno_path
         with open(new_path, 'w') as f:
             json.dump(self.data, f)
@@ -112,7 +144,7 @@ class BaseAnnotation:
         return self
     
     def get_anno_path(self) :
-        ''' Return anno_path'''
+        ''' Return anno_path.'''
         return anno_path
     
 
