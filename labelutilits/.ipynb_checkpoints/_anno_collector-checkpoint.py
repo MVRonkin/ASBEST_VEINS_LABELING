@@ -20,10 +20,10 @@ import matplotlib.colors as mcolors
 from pycocotools.coco import COCO
 
 
-from ._annojson  import *
-from ._coco_func import *
+# from ._annojson  import *
+# from ._coco_func import *
 from ._path      import *
-from ._coco_func import _get_coco_annotations
+from .OLD._coco_func import _get_coco_annotations
         
 #----------------------------------------------
 def check_anno_labels(anno_path, image_dir_path = None, cat_ids = None):

@@ -4,7 +4,7 @@ import numpy as np
 import json
 
 __all__ = ['_open','_set_cat_names','_cat_ids','_filter_cat','_replace_image_dir',
-           '_get_data_info','_reset_ids', '_most_frequent_size', '_image_list']
+           '_get_data_info','_count_anno_at_images', '_most_frequent_size', '_image_list']
 #---------------------------------------
 def _open(anno_path):
     ''' Open data in json format
@@ -138,51 +138,11 @@ def _get_data_info(data):
     desc['anno_number'] = len(data['annotations'])
     desc['fname_example']  = data['images'][0]['file_name'] 
     image_dir_path = os.path.split(desc['fname_example'])[0]
-    name_dataset   = os.path.split(os.path.split(image_dir_path)[0])[1]
+    name_dataset   = os.path.split(image_dir_path)[-1]
     desc['image_dir_path']  = image_dir_path
     desc['dataset_name']    = name_dataset
 
     return desc
-
-#---------------------------------------
-def _reset_ids(data):
-    '''Reser all indexes,
-      category id, image ids, annotation ids.
-    
-    Parameters
-    ----------
-    data: dict[list[dict]], 
-      coco format dict from json.
-      
-    Returns
-    ----------
-    data: dict[list[dict]], 
-      coco format dict from json.
-    '''
-    tmp_cat_id = dict()
-    for i in range(len(data['categories'])):
-        tmp_cat_id.update({data['categories'][i]['id']: i+1})#  = data['categories'][i]['id']
-        data['categories'][i]['id'] = i+1
-    #---------------------------------
-
-    #---------------------------------
-    tmp_img_id = dict()
-    for i in range(len(data['images'])):
-        tmp_img_id.update({data['images'][i]['id']:i+1})
-        data['images'][i]['id'] = i+1
-    #---------------------------------    
-
-    #---------------------------------
-    tmp_anno_id = np.zeros(len(data['annotations']), dtype = int)
-
-    for i in range(len(data['annotations'])):
-        data['annotations'][i]['category_id'] =\
-            tmp_cat_id[data['annotations'][i]['category_id']]
-        data['annotations'][i]['image_id'] =\
-            tmp_img_id[data['annotations'][i]['image_id']]
-        data['annotations'][i]['id'] = i+1
-    return data
-#-----------------------------
 
 def _most_frequent_size(data):
     '''Return most frequent image size in form (width, height).
@@ -217,3 +177,20 @@ def _image_list(data):
       list of image pathes.
     '''
     return [x['file_name'] for x in data['images']]
+
+def _count_anno_at_images(data): 
+    ''' Count annotations for each iamge for data 
+      in COCO JSON format.
+    Parameters
+    -----------
+    data: dict[list[dict]],
+      data for annotation in coco json format.
+
+    Returns
+    ----------
+    list[int]: array counts for each image.
+    '''
+    list_anno_cnt = np.asarray([x['image_id'] for x in data['annotations']])
+    _, counts   = np.unique(list_anno_cnt, return_counts=True)
+    return list(counts.astype(int))
+    
