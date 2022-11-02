@@ -2,9 +2,10 @@
 import os
 import numpy as np
 import json
+from pycocotools import mask as cocoutils
 
 __all__ = ['_open','_set_cat_names','_cat_ids','_filter_cat','_replace_image_dir',
-           '_get_data_info','_count_anno_at_images', '_most_frequent_size', '_image_list']
+           '_get_data_info','_count_anno_at_images', '_most_frequent_size', '_image_list','_ann2mask']
 #---------------------------------------
 def _open(anno_path):
     ''' Open data in json format
@@ -194,3 +195,10 @@ def _count_anno_at_images(data):
     _, counts   = np.unique(list_anno_cnt, return_counts=True)
     return list(counts.astype(int))
     
+#-----------------------------------
+def _ann2mask(ann, h,w):
+    segm = ann['segmentation']
+    rles = cocoutils.frPyObjects(segm, h, w)
+    rle  = cocoutils.merge(rles)
+    instant_mask = cocoutils.decode(rle)  
+    return instant_mask

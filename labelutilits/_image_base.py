@@ -3,6 +3,8 @@ import os
 import numpy as np
 import json
 from PIL import Image
+
+
 #-----------------------------------
 
 def _imgs2gray(img_pths):
@@ -53,3 +55,5 @@ def _resize_imgs(img_pths, width, height):
     return report_list
 
 #----------------------------------
+
+

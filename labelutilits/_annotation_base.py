@@ -2,6 +2,7 @@
 import os
 import numpy as np
 import json
+from pycocotools import mask as cocoutils
 
 __all__ = ['_open','_set_cat_names','_cat_ids','_filter_cat','_replace_image_dir',
            '_get_data_info','_count_anno_at_images', '_most_frequent_size', '_image_list']
@@ -193,4 +194,3 @@ def _count_anno_at_images(data):
     list_anno_cnt = np.asarray([x['image_id'] for x in data['annotations']])
     _, counts   = np.unique(list_anno_cnt, return_counts=True)
     return list(counts.astype(int))
-    

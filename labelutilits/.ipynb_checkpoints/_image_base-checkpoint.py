@@ -3,6 +3,8 @@ import os
 import numpy as np
 import json
 from PIL import Image
+from pycocotools import mask as cocoutils
+
 #-----------------------------------
 
 def _imgs2gray(img_pths):
@@ -51,3 +53,14 @@ def _resize_imgs(img_pths, width, height):
             img.save(img_pth)
             report_list.append(img_pth)
     return report_list
+
+#----------------------------------
+
+
+#-----------------------------------
+def _ann2mask(ann, h,w):
+    segm = ann['segmentation']
+    rles = cocoutils.frPyObjects(segm, h, w)
+    rle  = cocoutils.merge(rles)
+    instant_mask = cocoutils.decode(rle)  
+    return instant_mask

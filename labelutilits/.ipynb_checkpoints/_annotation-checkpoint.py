@@ -24,6 +24,11 @@ from ._reset_annotation import (_reset_indexes,
 from ._image_base import (_resize_imgs,
                           _imgs2gray)
 
+from ._coco_base import (_ann2mask,
+                         _masks2image,
+                         _masks2d,
+                         _image_with_bbox)
+
 
     
 class Annotation():
@@ -275,7 +280,8 @@ class Annotation():
         return image
 
     #-------------------------------------    
-    def get_annotations(self, image_id):
+
+    def get_annotations(self, image_id = 1, cat_ids = None):
         '''
         Get annotations for image by id.
         
@@ -283,6 +289,8 @@ class Annotation():
         ----------
         image_id: int,
           images to select, start from 1.
+        cat_ids: list[int],
+          categories to output, all possible if None.
 
         Returns
         ----------
@@ -292,12 +300,18 @@ class Annotation():
         self.__check_image_id(image_id)
         anno_first_id = np.sum(self.counts_anno[:image_id-1])
         anno_last_id  = self.counts_anno[image_id-1] + anno_first_id
-        return self.data['annotations'][int(anno_first_id):int(anno_last_id)]
-    
-    #-----------------------------------------------
-    def get_segmentations(self, image_id):
+        
+        anns = self.data['annotations'][int(anno_first_id):int(anno_last_id)]
+        
+        if cat_ids !=None:
+            cat_ids = np.atleast_1d(cat_ids).astype(int)
+            anns = [x for x in anns if x['category_id'] in cat_ids]
+        
+        return anns
+    #-------------------------------------        
+    def get_image_descriptor(self, image_id):
         '''
-        Get segmentations for image in the fromat [x,y,...].
+        Get image descriptor by id.
         
         Parameters
         ----------
@@ -306,15 +320,35 @@ class Annotation():
 
         Returns
         ----------
+        dict: description for image in COCO format.
+        '''        
+        self.__check_image_id(image_id)
+        return self.data['images'][image_id-1]
+    
+    #-----------------------------------------------
+    def get_segmentations(self, image_id, cat_ids = None):
+        '''
+        Get segmentations for image in the fromat [x,y,...].
+        
+        Parameters
+        ----------
+        image_id: int,
+          images to select, start from 1.
+        cat_ids: list[int],
+          categories to output, all possible if None.
+        
+        Returns
+        ----------
         list[list]: annotation for instances segmentation 
           for image in format [x,y,x,y...].
         
         '''
-        anns = self.get_annotations(image_id = image_id)
+        anns = self.get_annotations(image_id = image_id, 
+                                    cat_ids = cat_ids)
         return sum([x['segmentation'] for x in anns],[])
     
     #-----------------------------------------------
-    def get_bboxes(self, image_id):
+    def get_bboxes(self, image_id, cat_ids = None):
         '''
         Get bounding boxes for image 
           in the fromat [x0,y0,w,h], where: 
@@ -325,16 +359,78 @@ class Annotation():
         ----------
         image_id: int,
           images to select, start from 1.
-
+        cat_ids: list[int],
+          categories to output, all possible if None.
+        
         Returns
         ----------
         list[list]: annotation for bounding boxes 
           for image in format [x0,y0,w,h].
         
         '''
-        anns = self.get_annotations(image_id = image_id)
+        anns = self.get_annotations(image_id = image_id, cat_ids = cat_ids)
         return [x['bbox'] for x in anns]
+    
+    #----------------------------------------------- 
+    def get_masks(self,image_id, cat_ids = None, mode = 'instances'):
+        '''
+        Get segmentation masks for image instanaces by id.
+        
+        Parameters
+        ----------
+        image_id: int,
+          images to select, start from 1.
+        cat_ids: list[int],
+          categories to output, all possible if None.
+        mode: string, 
+          posible modes: 'instances', '3d array', '2d array'.
+          * 'instances': output is the 3d ndarray in format instances x height x width.
+          * '3d array':  output is the 3d ndarray in format height x width x channel,
+             where each instances have random color, adobted for visualization.
+          * '2d array':  output is the 2d ndarray in format height x width,
+             where each instant have different value in range from 0 to max.
+        
+        Returns
+        ----------
+        ndarray: image like array .
+        
+        '''        
+        anns = self.get_annotations(image_id = image_id, 
+                                    cat_ids  = cat_ids)
+        img_desc = self.get_image_descriptor(image_id)
 
+        h = img_desc['height'] 
+        w = img_desc['width' ]
+        
+        out = np.asarray([_ann2mask(ann,h,w) for ann in anns])
+        if mode == '3d array': out = _masks2image(out)
+        if mode == '2d array': out = _masks2d(out)    
+        return out #, dtype = np.int8)
+    #---------------------------------------------- 
+    def get_image_with_bbox(self, image_id, cat_ids = None, color =0, thikness = 10):
+        '''
+        Get image with drawn bounding boxes.
+        
+        Parameters
+        ----------
+        image_id: int,
+          images to select, start from 1.
+        cat_ids: list[int],
+          categories to output, all possible if None.
+        color: int; [int,int,int],
+          color for box bounds, int format for brightness,
+          [int,int,int] format for color.
+        thikness: int,
+          thikness for box bounds.
+        
+        Returns
+        ----------
+        ndarray: image array with drawn bounding boxes.        
+        '''
+        img = self.get_image(image_id = 1)
+        bboxes = self.get_bboxes(image_id, cat_ids)
+        return _image_with_bbox(img, bboxes, color, thikness)
+    
     #----------------------------------------------
     def __check_image_id(self, image_id):
         if image_id<1 or image_id > len(self.data['images']):
