@@ -389,7 +389,8 @@ class Annotation():
              where each instances have random color, adobted for visualization.
           * '2d array':  output is the 2d ndarray in format height x width,
              where each instant have different value in range from 0 to max.
-        
+          * 'semseg':  output is the 2d ndarray in format height x width,
+             where each instant have same value 1.
         Returns
         ----------
         ndarray: image like array .
@@ -404,7 +405,8 @@ class Annotation():
         
         out = np.asarray([_ann2mask(ann,h,w) for ann in anns])
         if mode == '3d array': out = _masks2image(out)
-        if mode == '2d array': out = _masks2d(out)    
+        if mode == '2d array': out = _masks2d(out)
+        if mode == 'semseg': out = _masks2d(out); out[out>0]=1
         return out #, dtype = np.int8)
     #---------------------------------------------- 
     def get_image_with_bbox(self, image_id, cat_ids = None, color =0, thikness = 10):
