@@ -5,7 +5,8 @@ import json
 from pycocotools import mask as cocoutils
 
 __all__ = ['_open','_set_cat_names','_cat_ids','_filter_cat','_replace_image_dir',
-           '_get_data_info','_count_anno_at_images', '_most_frequent_size', '_image_list']
+           '_get_data_info','_count_anno_at_images', '_most_frequent_size', '_image_list',
+           '_df2anno', '_data_head', '_data2df']
 #---------------------------------------
 def _open(anno_path):
     ''' Open data in json format
@@ -70,6 +71,105 @@ def _cat_ids(data, cat_ids = None):
         data['categories'] = [x for x in data['categories'] if x['id'] in cat_ids]
     return cat_ids, data
 #---------------------------------------
+# def _filter_cat(data, cat_ids = None):
+#     ''' Select only instasnce for category,
+#     if cat is None, select all labeld instances.
+    
+#     Parameters
+#     ----------
+#     data: dict[list[dict]], 
+#       coco format dict from json.
+#     cat_ids: list[string],
+#       new category id, all for classes (categories).
+      
+#     Returns
+#     ----------
+#     dict[list[dict]],
+#       coco format dict for json save.
+#     '''
+#     cat_ids, data = _cat_ids(data = data, cat_ids = cat_ids)
+
+#     data['annotations'] =  list(filter(lambda x:x['category_id'] in cat_ids, data['annotations']))
+#     list_ids = list(set(map(lambda x:x['image_id'], data['annotations'])))
+#     data['images'] = list(filter(lambda x:x['id'] in list_ids, data['images']))
+#     return data
+
+def _data2df(data):
+    '''Transform data 2 pandas database grouped by annotation id
+    Paramters
+    --------
+    data: dict[list[dict]],
+      json format of coco data annotation.
+    
+    Returns
+    -------
+    pd.DataFrame: columns from images keys and annotations keys, 
+      rows by annotation id.      
+    '''
+    anno_df  = pd.DataFrame(data['annotations'])
+
+    image_df = pd.DataFrame(data['images']).\
+                        rename(columns={"id": "image_id"})
+    
+    anno_df  = anno_df.merge(image_df, 
+                            left_on  = 'image_id', 
+                            right_on = 'image_id')
+
+    return anno_df
+
+def _data_head(data):
+    '''Extract keys from data in json coco format.
+   
+   Paramters
+    --------
+   data: dict[list[dict]],
+     json format of coco data annotation.
+    
+    Returns
+    -------
+    dict: keys 'licenses', 'info', 'categories'.
+    list: keys from data 'annotatinos' field
+    list: keys from data 'images' field
+             
+    '''
+    anno_keys = [*data['annotations'][0]]
+    img_keys  = [*data['images'][0]]
+    data_head = {k:v for k,v in zip(data.keys(),data.values()) 
+                     if k in ['licenses', 'info', 'categories']}  
+    return data_head, anno_keys, img_keys
+
+
+def _df2anno(anno_df, data_head, anno_keys, img_keys):
+    '''
+    Transform pd.DataFrame taken by annotation id to data in json coco format.
+    
+    Paramters
+    --------
+    anno_df:  pd.DataFrame: columns from images keys 
+      and annotations keys, rows by annotation id. 
+    data_head:dict, 
+      dict with keys 'licenses', 'info', 'categories'..
+    anno_keys: list,
+      list of keys from data 'annotatinos' field
+    img_keys: list,
+      list of keys from data 'images' field
+        
+    Returns
+    -------
+    dict[list[dict]]: json format of coco data annotation.
+    '''
+    data = data_head
+    img_keys[img_keys.index('id')] = 'image_id' # FROM _data2df
+    
+    annotations_df = anno_df[anno_keys]
+    data['annotations'] = annotations_df.to_dict(orient='records')
+    
+    iamges_df = anno_df[img_keys].drop_duplicates(subset=['file_name'])
+
+    data['images'] = iamges_df.rename(columns = {'image_id':'id'}).to_dict(orient='records')
+    
+    return data
+
 def _filter_cat(data, cat_ids = None):
     ''' Select only instasnce for category,
     if cat is None, select all labeld instances.
@@ -85,12 +185,13 @@ def _filter_cat(data, cat_ids = None):
     ----------
     dict[list[dict]],
       coco format dict for json save.
-    '''
+    ''' 
     cat_ids, data = _cat_ids(data = data, cat_ids = cat_ids)
-
-    data['annotations'] =  list(filter(lambda x:x['category_id'] in cat_ids, data['annotations']))
-    list_ids = list(set(map(lambda x:x['image_id'], data['annotations'])))
-    data['images'] = list(filter(lambda x:x['id'] in list_ids, data['images']))
+    cat_ids = list(np.atleast_1d(cat_ids)[:].astype(int))
+    anno_df = _data2df(data)
+    anno_df = anno_df.loc[anno_df['category_id'].isin(cat_ids)]
+    data_head, anno_keys, img_keys = _data_head(data)
+    data = _df2anno(anno_df, data_head, anno_keys, img_keys)
     return data
 
 #---------------------------------------
