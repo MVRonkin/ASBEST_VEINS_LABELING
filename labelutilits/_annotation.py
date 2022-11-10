@@ -13,7 +13,8 @@ from ._annotation_base import (_set_cat_names,
                                _get_data_info,
                                _most_frequent_size, 
                                _image_list,
-                               _count_anno_at_images)
+                               _count_anno_at_images,
+                              )
 
 from ._reset_annotation import (_reset_indexes,
                                 _reset_images,

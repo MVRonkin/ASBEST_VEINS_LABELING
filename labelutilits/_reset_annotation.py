@@ -4,6 +4,8 @@ import json
 from PIL import Image
 import pandas as pd
 
+from ._annotation_base import (_data2df,_data_head, _df2anno)
+
 #---------------------------------------
 def _reset_indexes(data):
     '''Reser all indexes,
@@ -19,30 +21,14 @@ def _reset_indexes(data):
     data: dict[list[dict]], 
       coco format dict from json.
     '''
-    tmp_cat_id = dict()
-    for i in range(len(data['categories'])):
-        tmp_cat_id.update({data['categories'][i]['id']: i+1})#  = data['categories'][i]['id']
-        data['categories'][i]['id'] = i+1
-    #---------------------------------
-
-    #---------------------------------
-    tmp_img_id = dict()
-    for i in range(len(data['images'])):
-        tmp_img_id.update({data['images'][i]['id']:i+1})
-        data['images'][i]['id'] = i+1
-    #---------------------------------    
-
-    #---------------------------------
-    for i in range(len(data['annotations'])):
-        data['annotations'][i]['category_id'] =\
-            tmp_cat_id[data['annotations'][i]['category_id']]
-        data['annotations'][i]['image_id'] =\
-            tmp_img_id[data['annotations'][i]['image_id']]
-        data['annotations'][i]['id'] = i+1
-    
+    anno_df = _data2df(data)
+    anno_df =  anno_df.sort_values(by=['image_id'])
+    anno_df['id'] = (np.arange(len(anno_df)).astype(int)+1)
+    data_head, anno_keys, img_keys = _data_head(data)
+    data = _df2anno(anno_df, data_head, anno_keys, img_keys)
     return data
-#-----------------------------
 
+#---------------------------------------
 def _reset_images(data):
     '''
     Reset images in COCO JSON annotations,
@@ -73,6 +59,7 @@ def _reset_images(data):
                               columns = ['delated_img_idx',
                                          'deleted_fnames',])
 
+#---------------------------------------
 def _reset_labels(data):
     '''
      Reset annotations (labels) in COCO JSON annotations,
@@ -107,7 +94,7 @@ def _reset_labels(data):
    
     return data, report
 
-
+#---------------------------------------
 def _reset_image_sizes(data):
     '''Correct Image Size in data anno in COCO JSON format.
     Paramters
@@ -136,7 +123,7 @@ def _reset_image_sizes(data):
 
     return data#, report
 
-
+#---------------------------------------
 def reset_annotation(data):
     '''
      Reset annotation in COCO JSON annotations,

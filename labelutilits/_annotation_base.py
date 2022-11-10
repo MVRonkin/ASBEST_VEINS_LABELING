@@ -2,6 +2,7 @@
 import os
 import numpy as np
 import json
+import pandas as pd
 from pycocotools import mask as cocoutils
 
 __all__ = ['_open','_set_cat_names','_cat_ids','_filter_cat','_replace_image_dir',
