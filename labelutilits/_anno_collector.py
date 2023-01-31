@@ -203,7 +203,6 @@ def collec_newanno(path, dir_names, image_dir_path = None, cat_ids = None):
             anno_id_tmp,  image_id_tmp = last_anno_id,  last_image_id
             last_anno_id,  last_image_id = _last_from_annodf(df_)
             annodf = pd.concat([annodf, df_], ignore_index=True)
-            # annodf = annodf.append(df_,ignore_index=True)
             print(f'images:{last_image_id-image_id_tmp}, instances:{last_anno_id-anno_id_tmp}')
         else: print('No labeled data')
     return annodf
