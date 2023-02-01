@@ -260,7 +260,7 @@ class Annotation():
         string: image pathes.
         '''
         self.__check_image_id(image_id)
-        return self.data['images'][image_id - 1]['file_name']
+        return os.path.join(self.image_dir_path ,self.data['images'][image_id - 1]['file_name'])
     
     #-------------------------------------    
     def get_image(self, image_id):
@@ -299,11 +299,7 @@ class Annotation():
         
         '''
         self.__check_image_id(image_id)
-        anno_first_id = np.sum(self.counts_anno[:image_id-1])
-        anno_last_id  = self.counts_anno[image_id-1] + anno_first_id
-        
-        anns = self.data['annotations'][int(anno_first_id):int(anno_last_id)]
-        
+        anns = [x for x in self.data['annotations'] if x['image_id'] == image_id]
         if cat_ids !=None:
             cat_ids = np.atleast_1d(cat_ids).astype(int)
             anns = [x for x in anns if x['category_id'] in cat_ids]
@@ -410,7 +406,7 @@ class Annotation():
         if mode == 'semseg': out = _masks2d(out); out[out>0]=1
         return out #, dtype = np.int8)
     #---------------------------------------------- 
-    def get_image_with_bbox(self, image_id, cat_ids = None, color =0, thikness = 10):
+    def get_image_with_bbox(self, image_id = 1, cat_ids = None, color =0, thikness = 10):
         '''
         Get image with drawn bounding boxes.
         
@@ -430,10 +426,12 @@ class Annotation():
         ----------
         ndarray: image array with drawn bounding boxes.        
         '''
-        img = self.get_image(image_id = 1)
+        img = self.get_image(image_id)
         bboxes = self.get_bboxes(image_id, cat_ids)
-        return _image_with_bbox(img, bboxes, color, thikness)
-    
+        if bboxes:
+          return _image_with_bbox(img, bboxes, color, thikness)
+        else:
+          return img
     #----------------------------------------------
     def __check_image_id(self, image_id):
         if image_id<1 or image_id > len(self.data['images']):
