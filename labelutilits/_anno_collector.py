@@ -100,7 +100,6 @@ def anno2df(anno_path, image_dir_path=None, cat_ids = None, start_image_id = 0, 
     df = pd.DataFrame()
 
     for i,img_desc in enumerate(imglist):
-
         anno_ids = coco.getAnnIds(imgIds =[img_desc['id']], 
                                   catIds=cat_ids, 
                                   iscrowd=None)
@@ -158,7 +157,7 @@ def collec_newanno(path, dir_names, image_dir_path = None, cat_ids = None):
     anno_path: string, 
       path annotation file.
     image_dir_path: string,
-      path iamge directory. 
+      path image directory. 
       if none anno file and images are in the same directory. 
     cat_ids: list[int],
       classes to outout, , all possible if None.
@@ -186,19 +185,18 @@ def collec_newanno(path, dir_names, image_dir_path = None, cat_ids = None):
     last_anno_id,  last_image_id = 0,0
     annodf = pd.DataFrame()
     for dir_name in dir_names:
-        print('\n'+dir_name)
         anno_path = _get_anno_path(path, dir_name)
     
         df = correct_anno_img_names(anno_path, 
                                     image_dir_path=image_dir_path, 
                                     image_id = None)
-
+        
         df_ = anno2df(anno_path, 
                       start_image_id = last_image_id, 
                       start_anno_id  = last_anno_id, 
                       image_dir_path = image_dir_path, 
                       cat_ids        = cat_ids)
-       
+        print(df_.shape)
         if df_.shape[0] >0:
             anno_id_tmp,  image_id_tmp = last_anno_id,  last_image_id
             last_anno_id,  last_image_id = _last_from_annodf(df_)
