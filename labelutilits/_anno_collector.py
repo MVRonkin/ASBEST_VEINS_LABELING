@@ -196,7 +196,7 @@ def collec_newanno(path, dir_names, image_dir_path = None, cat_ids = None):
                       start_anno_id  = last_anno_id, 
                       image_dir_path = image_dir_path, 
                       cat_ids        = cat_ids)
-        print(df_.shape)
+                      
         if df_.shape[0] >0:
             anno_id_tmp,  image_id_tmp = last_anno_id,  last_image_id
             last_anno_id,  last_image_id = _last_from_annodf(df_)
