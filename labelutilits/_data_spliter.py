@@ -29,16 +29,16 @@ def k_fold_split_yolo(path2label:str,
         path_2_fold.mkdir()
         
         train_images = [path2image / name for name in list(map(l_images.__getitem__, train_indxs))]
-        _cp_file_list(path_2_fold,"train/", train_images);g
+        _cp_file_list(path_2_fold,"train/", train_images)
         
         test_images = [path2image / name for name in list(map(l_images.__getitem__, test_indxs))]
-        _cp_file_list(path_2_fold,"test/", test_images);
+        _cp_file_list(path_2_fold,"test/", test_images)
         
         train_labels = [path2label / name for name in list(map(l_labels.__getitem__, train_indxs))]
-        _cp_file_list(path_2_fold,"train/", train_labels);
+        _cp_file_list(path_2_fold,"train/", train_labels)
         
         test_labels = [path2label / name for name in list(map(l_labels.__getitem__, test_indxs))]
-        _cp_file_list(path_2_fold, "test/", test_labels);
+        _cp_file_list(path_2_fold, "test/", test_labels)
         
         yaml_config = {"names": ['stone'],
                 "nc": 1,
