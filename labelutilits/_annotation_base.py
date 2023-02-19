@@ -282,8 +282,8 @@ def _image_list(data):
     return [x['file_name'] for x in data['images']]
 
 def _count_anno_at_images(data): 
-    ''' Count annotations for each iamge for data 
-      in COCO JSON format.
+    ''' Count annotations for each image for data 
+    in COCO JSON format.
     Parameters
     -----------
     data: dict[list[dict]],

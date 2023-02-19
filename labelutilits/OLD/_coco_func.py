@@ -121,7 +121,7 @@ def _get_coco_annotations(coco_anno_dict,  coco, image_id, cat_ids):
     '''
     Get annotation in COCO foramt for specified images and classes.
     '''
-    if image_id == None: image_id = range(coco_anno_dict['length'])
+    if image_id == None: image_id = range(1,coco_anno_dict['length'] + 1) #!
     if cat_ids   == None: cat_ids   = coco_anno_dict['class_id']
         
     anno_ids = coco.getAnnIds(imgIds =image_id, catIds=cat_ids, iscrowd=None)
